@@ -1,0 +1,10 @@
+<div>
+    <h5 mat-dialog-title >Are you to Sure to Join with {{name.name}} ??</h5>
+
+    <div mat-dialog-actions align="end">
+        <div>
+            <button  mat-button mat-dialog-close (click)="handleClick(false)">No</button>
+            <button  mat-flat-button mat-dialog-close (click)="handleClick(true)">Yess</button>
+        </div>
+    </div>
+</div>

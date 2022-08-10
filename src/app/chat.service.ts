@@ -10,12 +10,15 @@ import { environment } from 'src/environments/environment';
 export class ChatService {
 
   public message$= new BehaviorSubject<{i?:number,j?:number,userId?:string| null, value?:string, boxId?:number}>({});
+  public user$ = new BehaviorSubject<{userId?: string,name?: string ,isActive?: boolean}> ({})
+  public fromId$ = new BehaviorSubject<{userId?: string,name?: string ,isActive?: boolean}>({})
+  public acceptedJoin$ = new BehaviorSubject<{userId?: string,name?: string ,isActive?: boolean,accepted?:boolean}>({})
   constructor() {}
 
   socket = io(environment.url);
 
-  public sendMessage(data: {i:number,j:number,userId:string| null, boxId:number}) {
-    this.socket.emit('message', data);
+  public sendMessage(data: {i:number,j:number,userId:string| null, boxId:number},to: string) {
+    this.socket.emit('message', data, to);
   }
 
   public getNewMessage = () => {
@@ -24,5 +27,41 @@ export class ChatService {
     });
     
     return this.message$.asObservable();
+  };
+
+  public getUsers = () => {
+    this.socket.on('user', (data: {userId?: string,name?: string ,isActive?: boolean}) =>{
+      this.user$.next(data);
+    });
+    
+    return this.user$.asObservable();
+  };
+
+  public registerUser = (data:{userId?: string,name: string ,isActive?: boolean})=>{
+    this.socket.emit('user',data);
+  }
+
+  public askToJoin = (to:{userId?: string,name?: string ,isActive?: boolean})=>{
+    this.socket.emit('request-join', to);
+  }
+
+  public fromId = () => {
+    this.socket.on('request-join', (data:{userId?: string,name?: string ,isActive?: boolean}) =>{
+      this.fromId$.next(data);
+    });
+    
+    return this.fromId$.asObservable();
+  };
+
+  public acceptance = (to:{userId?: string, acceptance?: boolean})=>{
+    this.socket.emit('accepted-join', to);
+  }
+
+  public listenAccepted = () => {
+    this.socket.on('accepted-join', (data:{userId?: string,name?: string ,isActive?: boolean, accepted?:boolean}) =>{
+      this.acceptedJoin$.next(data);
+    });
+    
+    return this.acceptedJoin$.asObservable();
   };
 }

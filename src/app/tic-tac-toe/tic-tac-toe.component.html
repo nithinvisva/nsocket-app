@@ -1,0 +1,8 @@
+<p *ngIf="isGameOver[0]">{{isGameOver[1]}}</p>
+<div>
+  <div *ngFor="let column of ticktak; let i = index">
+    <div class="board-row" >
+      <div style="width:50px;height:50px;border:1px solid #000;" *ngFor="let row of ticktak; let j = index" (click)="handleSquareClick(i,j)"> <span> {{ tictactoeList[i][j] }} </span></div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ChatService } from './chat.service';
 import * as _ from 'lodash';
+import { MatTableDataSource } from '@angular/material/table';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogComponent } from './dialog/dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -9,99 +13,98 @@ import * as _ from 'lodash';
 })
 export class AppComponent implements OnInit {
   title = 'nsocket-app';
-  ticktak = [0, 1, 2];
-  isGameOver :Array<any>=[]
-  messageList:Array<{i:number,j:number,userId:string| null,value?:string, boxId:number}>=[]
-  tictactoeList: string[][] = [['', '', ''], ['', '', ''], ['', '', '']]
-  winningCombination=[[0,1,2],[0,3,6],[0,4,8],[1,4,7],[2,4,6],[3,4,5],[2,5,8],[6,7,8]]
-  constructor(private chatService: ChatService) {
-
+  showInput: boolean = true;
+  userList: Array<{userId:string,name: string,isActive: boolean}> =[]
+  name!: string;
+  users = {} as { userId: string, name: string, isActive: boolean };
+  // columns to display
+  displayedColumns = ['select', 'name'];
+  dataSource!: MatTableDataSource<{userId:string, name: string, isActive: boolean}>
+  selection = new SelectionModel<{userId:string, name: string, isActive: boolean}>(true, []);
+  toUser!: string;
+  showBoard:boolean= false;
+  isClicked:boolean = false
+  constructor(private chatService: ChatService,
+    public matDialog: MatDialog,) {
   }
   ngOnInit() {
-    this.generateMessageList();
-    this.chatService.getNewMessage().subscribe((message: {i?:number,j?:number,userId?:string| null,value?:string, boxId?:number}) => {
-      if(message?.i != undefined && message?.j != undefined && message?.value !=undefined ){
-      this.messageList.map((data)=>{
-        if(data.boxId == message.boxId){
-          data.value = message.value
+    this.dataSource= new MatTableDataSource(this.userList);
+    this.chatService.getUsers().subscribe(async (user: { userId?: string, name?: string, isActive?: boolean }) => {
+      if(user?.userId != undefined && user?.name != undefined && user?.isActive !=undefined ){
+        if(this.ifUserExist(user)){
+          this.userList.map((data)=>{
+            if(data.userId == user.userId && user?.isActive !=undefined){
+              data.isActive = user.isActive;
+            }
+          })
+        }else{
+          const newUser ={
+            name: user.name,
+            userId: user.userId,
+            isActive: user.isActive
+          }
+          this.userList.push(newUser)
         }
-      })
-      this.tictactoeList[message.i][message.j] = message.value
+        this.dataSource= new MatTableDataSource(this.userList);
       }
-      this.isGameOver= this.checkWinner()
+    })
+    this.chatService.fromId().subscribe((user: { userId?: string, name?: string })=>{
+        if(user?.userId != undefined && user?.name != undefined){
+          this.openDialog(user.name,user.userId)
+        }
+    })
+    this.chatService.listenAccepted().subscribe((user: { userId?: string, name?: string, isActive?: boolean, accepted?: boolean})=>{
+      if(user?.accepted){
+        if(user?.userId != undefined && user?.name != undefined && user?.isActive !=undefined ){
+          this.sendToChangeStatus(user.name, user.userId)
+        }
+      }else{
+        this.selection.clear();
+      }
     })
   }
 
-  sendData(data: { i: number, j: number, userId: string | null, value: string, boxId: number }) {
-    this.chatService.sendMessage(data);
-  }
-  handleSquareClick(i: number, j: number) {
-    const data = {
-      i: i,
-      j: j,
-      boxId: this.getBoxId(i, j),
-      userId: '',
-      value: ''
+  onSubmit() {
+    this.showInput = false;
+    const registerData = {
+      name: this.name
     }
-    this.sendData(data);
+    this.chatService.registerUser(registerData)
   }
-  generateMessageList(){
-    this.tictactoeList.map((row,i)=>{
-      row.map((col,j)=>{
-        const data = {
-          i: i,
-          j: j,
-          boxId: this.getBoxId(i, j),
-          userId: '',
-          value: ''
-        }
-        this.messageList.push(data)
-      })
+
+  toggleSelection(row:{userId:string,name: string,isActive: boolean} ){
+    this.selection.clear();
+    this.selection.toggle(row);
+  }
+  joinRoom(){
+    this.chatService.askToJoin(this.selection.selected[0]);
+  }
+  openDialog(name:string,id:string){
+    const dialogRef = this.matDialog.open(DialogComponent,{
+      width: 'auto',
+      height: 'auto',
+      disableClose: true,
+      data: {name: name}
     })
-  }
-  getBoxId(i: number, j: number): number {
-    switch (i) {
-      case 0:
-        if (j == 0) {
-          return 0
-        } else if (j == 1) {
-          return 1;
-        } else {
-          return 2
-        }
-        break;
-      case 1:
-        if (j == 0) {
-          return 3
-        } else if (j == 1) {
-          return 4;
-        } else {
-          return 5
-        }
-        break
-      case 2:
-        if (j == 0) {
-          return 6
-        } else if (j == 1) {
-          return 7;
-        } else {
-          return 8
-        }
-        break;
-      default:
-        return 10;
-    }
-  }
-  checkWinner(): Array<any>{
-    const data = _.orderBy(this.messageList,'boxId').map((data)=>{
-      return data.value
-    })
-    for(let i=0;i<this.winningCombination.length;i++){
-      const [a,b,c]= this.winningCombination[i];
-      if(data[a] && data[a]==data[b] && data[a]==data[c]){
-        return [true,`${data[a]} is Winner`]
+    dialogRef.afterClosed().subscribe((result) => {
+      if(result){
+        this.chatService.acceptance({userId:id, acceptance: true})
+        this.sendToChangeStatus(name,id);
       }
+    })
+  }
+
+  ifUserExist(user: {name?: string, userId?: string, isActive?: boolean}):boolean{
+    return _.includes(this.userList.map((data)=>(data.userId == user.userId)), true)
+  }
+  sendToChangeStatus(name: string, id: string){
+    const registerData = {
+      name: name,
+      userId: id,
+      isActive: false
     }
-    return [false,'']
+    this.chatService.registerUser(registerData)
+    this.toUser = id;
+    this.showBoard = true;
   }
 }
