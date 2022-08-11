@@ -18,10 +18,11 @@ export class AppComponent implements OnInit {
   name!: string;
   users = {} as { userId: string, name: string, isActive: boolean };
   // columns to display
-  displayedColumns = ['select', 'name'];
+  displayedColumns = ['name', 'select' ];
   dataSource!: MatTableDataSource<{userId:string, name: string, isActive: boolean}>
   selection = new SelectionModel<{userId:string, name: string, isActive: boolean}>(true, []);
   toUser!: string;
+  fromUser!: string;
   showBoard:boolean= false;
   isClicked:boolean = false
   constructor(private chatService: ChatService,
@@ -56,6 +57,7 @@ export class AppComponent implements OnInit {
     this.chatService.listenAccepted().subscribe((user: { userId?: string, name?: string, isActive?: boolean, accepted?: boolean})=>{
       if(user?.accepted){
         if(user?.userId != undefined && user?.name != undefined && user?.isActive !=undefined ){
+          this.toUser = user.name
           this.sendToChangeStatus(user.name, user.userId)
         }
       }else{
@@ -89,6 +91,7 @@ export class AppComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if(result){
         this.chatService.acceptance({userId:id, acceptance: true})
+        this.fromUser = name;
         this.sendToChangeStatus(name,id);
       }
     })
@@ -104,7 +107,6 @@ export class AppComponent implements OnInit {
       isActive: false
     }
     this.chatService.registerUser(registerData)
-    this.toUser = id;
     this.showBoard = true;
   }
 }

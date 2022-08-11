@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ChatService } from '../chat.service';
 import * as _ from 'lodash';
+import { UsersList } from './tic-tac-toe.interface';
 
 @Component({
   selector: 'app-tic-tac-toe',
@@ -8,7 +9,12 @@ import * as _ from 'lodash';
   styleUrls: ['./tic-tac-toe.component.css']
 })
 export class TicTacToeComponent implements OnInit {
-  @Input()toUser!:string;
+  @Input()toUser! :string;
+  @Input()fromUser! :string;
+  fromUserData!:UsersList;
+  toUserData!: UsersList
+  xCount:number= 0;
+  yCount:number =0;
   ticktak = [0, 1, 2];
   _=_;
   isGameOver :Array<any>=[]
@@ -16,10 +22,11 @@ export class TicTacToeComponent implements OnInit {
   tictactoeList: string[][] = [['', '', ''], ['', '', ''], ['', '', '']]
   winningCombination=[[0,1,2],[0,3,6],[0,4,8],[1,4,7],[2,4,6],[3,4,5],[2,5,8],[6,7,8]]
   constructor(private chatService: ChatService) {
-
   }
   ngOnInit() {
     this.generateMessageList();
+    const user= this.fromUser ? this.fromUser : this.toUser
+    this.chatService.getRoomDetails(user)
     this.chatService.getNewMessage().subscribe((message: {i?:number,j?:number,userId?:string| null,value?:string, boxId?:number}) => {
       if(message?.i != undefined && message?.j != undefined && message?.value !=undefined ){
       this.messageList.map((data)=>{
@@ -27,9 +34,17 @@ export class TicTacToeComponent implements OnInit {
           data.value = message.value
         }
       })
+      message.value == 'X'? this.xCount++: this.yCount++;
       this.tictactoeList[message.i][message.j] = message.value
       }
       this.isGameOver= this.checkWinner()
+    })
+    this.chatService.listeningRoomDetails().subscribe((room:{fromUser?: UsersList, toUser?:UsersList})=>{
+      console.log(room)
+      if(room?.fromUser != undefined && room?.toUser != undefined ){
+        this.fromUserData = room.fromUser;
+        this.toUserData = room.toUser
+      }
     })
   }
 
@@ -94,15 +109,19 @@ export class TicTacToeComponent implements OnInit {
     }
   }
   checkWinner(): Array<any>{
+    if(this.xCount+this.yCount != 9){
     const data = _.orderBy(this.messageList,'boxId').map((data)=>{
       return data.value
     })
     for(let i=0;i<this.winningCombination.length;i++){
       const [a,b,c]= this.winningCombination[i];
       if(data[a] && data[a]==data[b] && data[a]==data[c]){
-        return [true,`${data[a]} is Winner`]
+        return [true,(data[a] =='X' && this.toUser)?`YOU WON !!`: (data[a] =='O' && this.fromUser)?`YOU WON !!`:`YOU LOST!!`]
       }
     }
     return [false,'']
+  }else{
+    return [true,`It's a Draw`]
+  }
   }
 }

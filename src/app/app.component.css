@@ -1,9 +1,47 @@
 .example-form {
-    min-width: 150px;
-    max-width: 500px;
-    width: 100%;
-  }
-  
-  .example-full-width {
-    width: 100%;
-  }
+  min-width: 150px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.example-full-width {
+  width: 100%;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.name {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+}
+.margin{
+  margin: 255px;
+}
+.margin-btn{
+  margin: 0px 0px 0px 15px;
+}
+.title{
+  font-size: xx-large;
+  margin: 15px;
+}
+.join{
+  display: flex;
+  justify-content: end;
+  margin: 10px 0px 0px;
+}
+.table-div{
+  display: grid;
+    align-items: center;
+    justify-content: center;
+    margin: 50px 0px 0px;
+}
+.table-width{
+  min-width: 257px;
+}

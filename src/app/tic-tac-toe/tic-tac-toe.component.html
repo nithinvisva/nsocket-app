@@ -1,8 +1,12 @@
-<p *ngIf="isGameOver[0]">{{isGameOver[1]}}</p>
-<div>
+<div class="board">
+  <div>
+    <p *ngIf="isGameOver[0]">{{isGameOver[1]}}</p>
+    <p *ngIf="!isGameOver[0]">Now It's  {{((xCount+yCount)%2 == 0 && fromUser) ? fromUserData.name : ((xCount+yCount)%2 != 0 && toUser) ? fromUserData.name : 'Your'  }} Turn</p>
+  </div>
   <div *ngFor="let column of ticktak; let i = index">
     <div class="board-row" >
-      <div style="width:50px;height:50px;border:1px solid #000;" *ngFor="let row of ticktak; let j = index" (click)="handleSquareClick(i,j)"> <span> {{ tictactoeList[i][j] }} </span></div>
+      <div class="box" [ngStyle]="{'cursor': ((xCount+yCount)%2 == 0   && fromUser)? 'not-allowed' : ((xCount+yCount)%2 != 0 && toUser)?'not-allowed':'pointer'}" *ngFor="let row of ticktak; let j = index" (click)="handleSquareClick(i,j)"><div style="display: flex;"><span class="span"> {{ tictactoeList[i][j] }} </span>
+      </div></div>
     </div>
   </div>
 </div>
