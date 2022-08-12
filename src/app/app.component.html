@@ -55,7 +55,7 @@
     </div>
   </div>
   <div *ngIf="!showChat">
-    <button mat-icon-button [disabled]="!(userList.length >= 0) && showInput" (click)="showChat = !showChat"><mat-icon>chat</mat-icon></button>
+    <button mat-icon-button [disabled]="!(userList.length > 0) || showInput" (click)="showChat = !showChat"><mat-icon>chat</mat-icon></button>
   </div>
   <div *ngIf="userList.length > 0 && showChat">
     <div class="chat">
