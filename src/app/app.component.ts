@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogComponent } from './dialog/dialog.component';
+import { Chat } from './interface';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,7 @@ import { DialogComponent } from './dialog/dialog.component';
 export class AppComponent implements OnInit {
   title = 'nsocket-app';
   showInput: boolean = true;
+  chatList: Array<{userId:string,name: string,isActive: boolean}>= [{userId:'0',name:'All',isActive:true}]
   userList: Array<{userId:string,name: string,isActive: boolean}> =[]
   name!: string;
   users = {} as { userId: string, name: string, isActive: boolean };
@@ -25,8 +27,18 @@ export class AppComponent implements OnInit {
   fromUser!: string;
   showBoard:boolean= false;
   isClicked:boolean = false
+
+  //chat
+  selectedField:{userId:string,name: string,isActive: boolean}
+  selectedId: string ='0'
+  text:string=''
+  chatMessage: Chat[] =[]
+  displayList: Chat[] = []
+  showChat:boolean = false
+
   constructor(private chatService: ChatService,
     public matDialog: MatDialog,) {
+      this.selectedField = {userId:'0',name:'All',isActive:true}
   }
   ngOnInit() {
     this.dataSource= new MatTableDataSource(this.userList);
@@ -45,6 +57,7 @@ export class AppComponent implements OnInit {
             isActive: user.isActive
           }
           this.userList.push(newUser)
+          this.chatList.push(newUser)
         }
         this.dataSource= new MatTableDataSource(this.userList);
       }
@@ -63,6 +76,18 @@ export class AppComponent implements OnInit {
       }else{
         this.selection.clear();
       }
+    })
+    this.chatService.gettingText().subscribe((text: Chat)=>{
+      this.displayList =[]
+      if(text?.fromUser != undefined && text?.toUser != undefined && text?.message !=undefined ){
+      const newChatMessage = {
+        fromUser: text.fromUser,
+        toUser: text.toUser,
+        message: text.message
+      }
+      this.chatMessage.push(newChatMessage)
+      this.setDisplayList(this.selectedField.userId)
+    }
     })
   }
 
@@ -100,6 +125,7 @@ export class AppComponent implements OnInit {
   ifUserExist(user: {name?: string, userId?: string, isActive?: boolean}):boolean{
     return _.includes(this.userList.map((data)=>(data.userId == user.userId)), true)
   }
+
   sendToChangeStatus(name: string, id: string){
     const registerData = {
       name: name,
@@ -108,5 +134,31 @@ export class AppComponent implements OnInit {
     }
     this.chatService.registerUser(registerData)
     this.showBoard = true;
+  }
+
+  onSend(){
+    const data={
+      fromUser: undefined,
+      toUser: this.selectedField,
+      message: this.text.trim()
+    }
+    console.log(data)
+    this.chatService.sendText(data)
+    this.text=''
+  }
+
+  setDisplayList(id:string){
+    this.displayList=[]
+    for(let i=0;i<this.chatMessage.length;i++){
+      if(id == '0' && this.chatMessage[i].toUser?.userId == id){
+        this.displayList.push(this.chatMessage[i])
+      }
+      else if(this.chatMessage[i].toUser?.userId == id || this.chatMessage[i].fromUser?.userId == id){
+        this.displayList.push(this.chatMessage[i])
+      }
+    }
+  }
+  selectedOption(user:{userId:string, name: string, isActive: boolean}){
+    this.selectedField = user
   }
 }

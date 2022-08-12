@@ -21,27 +21,86 @@
   flex-direction: row;
   align-items: center;
 }
-.margin{
+.margin {
   margin: 255px;
 }
-.margin-btn{
+.margin-btn {
   margin: 0px 0px 0px 15px;
 }
-.title{
+.title {
   font-size: xx-large;
   margin: 15px;
 }
-.join{
+.join {
   display: flex;
   justify-content: end;
   margin: 10px 0px 0px;
 }
-.table-div{
+.table-div {
   display: grid;
-    align-items: center;
-    justify-content: center;
-    margin: 50px 0px 0px;
+  align-items: center;
+  justify-content: center;
+  margin: 50px 0px 0px;
 }
-.table-width{
+.table-width {
   min-width: 257px;
+}
+.page {
+  display: flex;
+  flex-direction: row;
+}
+.chat {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+.header {
+  background-color: steelblue;
+  color: white;
+  border: steelblue;
+  min-width: 283px;
+  min-height: 32px;
+}
+.display {
+  min-height: 500px;
+  display: flex;
+  align-items: flex-end;
+  max-width: max-content;
+}
+.form-field {
+  padding: 0px 0px 0px 44px;
+}
+.text-area {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+.message-cloud-sender{
+  width: auto;
+  min-width: fit-content;
+  background: silver;
+  border: silver;
+  border-radius: 10px;
+}
+.message-cloud-recieved{
+  width: auto;
+  min-width: fit-content;
+  background: steelblue;
+  border: steelblue;
+  border-radius: 10px;
+}
+.message-content{
+  padding: 5px 10px;
+}
+.multiple-message{
+  display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 266px;
+    overflow: auto;
+}
+.name-holder{
+  margin: 0px;
+  font-size: smaller;
+  color: slategray;
 }

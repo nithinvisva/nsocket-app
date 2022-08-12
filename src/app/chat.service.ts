@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { io } from "socket.io-client";
 import { environment } from 'src/environments/environment';
+import { Chat } from './interface';
 import { UsersList } from './tic-tac-toe/tic-tac-toe.interface';
 
 
@@ -15,6 +16,7 @@ export class ChatService {
   public fromId$ = new BehaviorSubject<{ userId?: string, name?: string, isActive?: boolean }>({})
   public acceptedJoin$ = new BehaviorSubject<{ userId?: string, name?: string, isActive?: boolean, accepted?: boolean }>({})
   public room$ = new BehaviorSubject<{ fromUser?: UsersList, toUser?: UsersList}> ({})
+  public chatMessage$ = new BehaviorSubject<Chat>({})
   constructor() { }
 
   socket = io(environment.url);
@@ -76,5 +78,16 @@ export class ChatService {
     });
 
     return this.room$.asObservable();
+  };
+
+  public sendText = (text: Chat) => {
+    this.socket.emit('chat', text)
+  }
+  public gettingText = () => {
+    this.socket.on('chat', (data: Chat) => {
+      this.chatMessage$.next(data);
+    });
+
+    return this.chatMessage$.asObservable();
   };
 }

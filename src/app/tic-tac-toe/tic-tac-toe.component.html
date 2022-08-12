@@ -1,7 +1,7 @@
 <div class="board">
   <div>
     <p *ngIf="isGameOver[0]">{{isGameOver[1]}}</p>
-    <p *ngIf="!isGameOver[0]">Now It's  {{((xCount+yCount)%2 == 0 && fromUser) ? fromUserData.name : ((xCount+yCount)%2 != 0 && toUser) ? fromUserData.name : 'Your'  }} Turn</p>
+    <p *ngIf="!isGameOver[0]">Now It's  {{((xCount+yCount)%2 == 0 && fromUser) ? fromUserData.name : ((xCount+yCount)%2 != 0 && toUser) ? toUserData.name : 'Your'  }} Turn</p>
   </div>
   <div *ngFor="let column of ticktak; let i = index">
     <div class="board-row" >

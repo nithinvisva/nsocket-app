@@ -1,50 +1,110 @@
 <!-- <app-tic-tac-toe></app-tic-tac-toe> -->
+<div class="page">
+  <div [ngStyle]="{
+      'min-width': showChat ? '75%' : '95%'
+    }">
+    <div class="content">
+      <div class="name">
+        <p class="title">TIC TAC TOE</p>
+      </div>
+      <div class="name margin" *ngIf="showInput">
+        <form #form="ngForm" (ngSubmit)="onSubmit()">
+          <mat-form-field>
+            <input matInput placeholder="Name" [(ngModel)]="name" name="name" required #nameRef="ngModel" />
+            <mat-error *ngIf="nameRef.hasError('required') && nameRef.touched">Required!</mat-error>
+          </mat-form-field>
+          <button class="margin-btn" mat-stroked-button type="submit" [disabled]="!form.valid">
+            Enter
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="table-div" *ngIf="!showInput && !showBoard">
+      <div *ngIf="userList.length > 0; else noRecords">
+        <mat-table class="table-width" [dataSource]="dataSource">
+          <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
+            <mat-cell *matCellDef="let row"> {{ row.name }}</mat-cell>
+          </ng-container>
 
-<div class="content">
-  <div class="name">
-    <p class="title">TIC TAC TOE</p>
-  </div>
-  <div class="name margin" *ngIf="showInput">
-    <form #form="ngForm" (ngSubmit)="onSubmit()">
-      <mat-form-field>
-        <input matInput placeholder="Name" [(ngModel)]="name" name="name" required #nameRef="ngModel">
-        <mat-error *ngIf="nameRef.hasError('required') && nameRef.touched">Required!</mat-error>
-      </mat-form-field>
-      <button class="margin-btn" mat-stroked-button type="submit" [disabled]="!form.valid"> Enter </button>
-    </form>
-  </div>
-</div>
-<div class="table-div" *ngIf="!showInput && !showBoard">
-  <div *ngIf="userList.length > 0; else noRecords">
-    <mat-table class="table-width"[dataSource]="dataSource">
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{row.name}}</mat-cell>
-      </ng-container>
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row">
+              <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? toggleSelection(row) : null"
+                [checked]="selection.isSelected(row)" [disabled]="!row.isActive">
+              </mat-checkbox>
+            </td>
+          </ng-container>
 
-      <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef>
-        </th>
-        <td mat-cell *matCellDef="let row">
-          <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? toggleSelection(row) : null"
-            [checked]="selection.isSelected(row)" [disabled]="!row.isActive">
-          </mat-checkbox>
-        </td>
-      </ng-container>
-
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;">
-      </mat-row>
-    </mat-table>
-    <div class="join">
-      <button mat-stroked-button [disabled]="selection.isEmpty() || isClicked"
-      (click)="isClicked = true; joinRoom()">Join</button>
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+        </mat-table>
+        <div class="join">
+          <button mat-stroked-button [disabled]="selection.isEmpty() || isClicked"
+            (click)="isClicked = true; joinRoom()">
+            Join
+          </button>
+        </div>
+      </div>
+      <ng-template #noRecords>
+        <p>Please wait for users to join</p>
+      </ng-template>
+    </div>
+    <div *ngIf="showBoard">
+      <app-tic-tac-toe [toUser]="toUser" [fromUser]="fromUser"></app-tic-tac-toe>
     </div>
   </div>
-  <ng-template #noRecords>
-    <p>Please wait for users to join</p>
-  </ng-template>
-</div>
-<div *ngIf="showBoard">
-  <app-tic-tac-toe [toUser]="toUser" [fromUser]="fromUser"></app-tic-tac-toe>
+  <div *ngIf="!showChat">
+    <button mat-icon-button [disabled]="!(userList.length > 0) && showInput" (click)="showChat = !showChat"><mat-icon>chat</mat-icon></button>
+  </div>
+  <div *ngIf="userList.length > 0 && showChat">
+    <div class="chat">
+      <!-- <div>
+          <p>side-nav</p>
+      </div> -->
+      <div>
+        <div class="header">
+          <div style="display: flex;">
+            <mat-form-field class="form-field" appearance="fill">
+              <mat-select [(ngModel)]="selectedId" (ngModelChange)="setDisplayList(selectedId)" placeholder="" #selectRef="ngModel">
+                <mat-option *ngFor="let user of chatList" [value]="user.userId" (click)="selectedOption(user)">
+                  {{ user.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-icon-button (click)="showChat = !showChat"><mat-icon>cancel</mat-icon></button>
+          </div>
+        </div>
+        <div class="display">
+          <div class="multiple-message" *ngIf="displayList.length > 0; else noMessages">
+            <div *ngFor="let message of displayList;let i = index">
+              <div *ngIf="i>0 ? displayList[i]?.fromUser?.userId != displayList[i-1]?.fromUser?.userId: 'true'">
+                <p class="name-holder">
+                  {{message?.fromUser?.name}}
+                </p>
+              </div> 
+                <div [ngClass]="message?.toUser?.userId == selectedId ?'message-cloud-sender':'message-cloud-recieved'">
+                  <p class="message-content" *ngIf="message?.toUser?.userId == selectedId || message?.fromUser?.userId == selectedId">
+                    {{ message?.message }}
+                  </p>
+                </div>
+            </div>
+          </div>
+          <ng-template #noMessages>
+            <p>No Message Yet!!</p>
+          </ng-template>
+        </div>
+        <div>
+          <form class="text-area" #form="ngForm" (ngSubmit)="onSend()">
+            <mat-form-field>
+              <textarea matInput placeholder="" [(ngModel)]="text" name="text" #textRef="ngModel" appEnterSend></textarea>
+            </mat-form-field>
+            <button id="send" mat-icon-button type="submit" [disabled]="text.trim().length == 0">
+              <mat-icon>send</mat-icon>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

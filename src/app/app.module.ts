@@ -8,11 +8,13 @@ import { TicTacToeModule } from './tic-tac-toe/tic-tac-toe.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from './shared/shared.module';
 import { DialogComponent } from './dialog/dialog.component';
+import { EnterSendDirective } from './enter-send.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DialogComponent
+    DialogComponent,
+    EnterSendDirective,
   ],
   imports: [
     BrowserModule,
