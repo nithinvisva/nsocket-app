@@ -124,4 +124,5 @@ export class TicTacToeComponent implements OnInit {
     return [true,`It's a Draw`]
   }
   }
+  doNothing(){}
 }

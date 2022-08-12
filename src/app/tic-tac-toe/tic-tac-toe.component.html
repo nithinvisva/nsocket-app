@@ -5,7 +5,7 @@
   </div>
   <div *ngFor="let column of ticktak; let i = index">
     <div class="board-row" >
-      <div class="box" [ngStyle]="{'cursor': ((xCount+yCount)%2 == 0   && fromUser)? 'not-allowed' : ((xCount+yCount)%2 != 0 && toUser)?'not-allowed':'pointer'}" *ngFor="let row of ticktak; let j = index" (click)="handleSquareClick(i,j)"><div style="display: flex;"><span class="span"> {{ tictactoeList[i][j] }} </span>
+      <div class="box" [ngStyle]="{'cursor': ((xCount+yCount)%2 == 0   && fromUser)? 'not-allowed' : ((xCount+yCount)%2 != 0 && toUser)?'not-allowed':tictactoeList[i][j]==''?'pointer':'not-allowed'}" *ngFor="let row of ticktak; let j = index" (click)="tictactoeList[i][j]==''?handleSquareClick(i,j):doNothing()"><div style="display: flex;"><span class="span"> {{ tictactoeList[i][j] }} </span>
       </div></div>
     </div>
   </div>
